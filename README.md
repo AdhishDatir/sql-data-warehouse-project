@@ -44,7 +44,8 @@ sql-data-warehouse-project/
 ├── scripts/      # SQL scripts for each layer
 │   ├── bronze/         # DDL and load procedures for raw data
 │   ├── silver/         # Cleansing and transformation scripts
-│   └── gold/           # Views for the dimension and fact tables
+│   ├── gold/           # Views for the dimension and fact tables
+|   ├── init_database   # Creates the database and schemas
 ├── tests/        # Data quality checks and validation queries
 └── README.md
 ```
