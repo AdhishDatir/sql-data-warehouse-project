@@ -30,6 +30,7 @@ The warehouse follows the Medallion Architecture pattern:
 | 🥇 Gold | Business-ready analytical views for reporting | Views | Query layer over Silver |
 
 **Data flow:** `CRM / ERP CSV files` → 🥉 `bronze` → 🥈 `silver` → 🥇 `gold` → `Reports / Analytics`
+![Data Architecture](docs/data_architecture.png)
 
 
 
