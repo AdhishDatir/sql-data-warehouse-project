@@ -1,158 +1,233 @@
 # 🏢 SQL Data Warehouse Project
 
-A modern data warehouse built with **SQL Server**, covering ETL pipelines, data modeling, and analytics. The project consolidates sales data from two source systems (CRM and ERP) into a clean, analytics-ready star schema using the **Medallion Architecture** (Bronze → Silver → Gold).
+A SQL Server data warehouse project that ingests, cleans, models, and analyzes sales data from CRM and ERP systems. The repository implements a medallion-style architecture (Bronze → Silver → Gold), with raw source files loaded into staging tables, transformed into clean analytical tables, and exposed through star-schema views for reporting and BI use cases.
 
 ---
 
 ## 🎯 Project Overview
 
-This project covers the full data engineering workflow:
+This project demonstrates the full data engineering lifecycle:
 
-1. 🏗️ **Data Architecture**: A three-layer warehouse (Bronze, Silver, Gold).
-2. 🔄 **ETL Pipelines**: Extract, transform, and load data from CSV source files into SQL Server.
-3. 📐 **Data Modeling**: Fact and dimension tables in a star schema, built for reporting.
-4. 📊 **Analytics**: SQL queries for customer behavior, product performance, and sales trends.
+1. 🏗️ Data architecture and layered warehouse design
+2. 🔄 ETL pipeline development using SQL Server and CSV ingestion
+3. 📐 Data modeling with dimension and fact objects in a star schema
+4. 🧹 Data quality remediation and transformation logic
+5. 📊 Analytical querying for business reporting and insights
 
 ### 🛠️ Skills Demonstrated
-SQL Development · Data Engineering · ETL Pipeline Development · Data Modeling · Data Quality & Cleansing · Data Analytics
+SQL Server · ETL Development · Data Modeling · Data Quality · Data Warehousing · Business Intelligence
 
 ---
 
 ## 🏛️ Architecture
 
-The warehouse follows the Medallion Architecture:
+The warehouse follows the Medallion Architecture pattern:
 
 | Layer | Purpose | Object Type | Load Method |
 |-------|---------|-------------|-------------|
-| 🥉 **Bronze** | Raw data, ingested as-is from the sources | Tables | Batch, full load (truncate & insert) |
-| 🥈 **Silver** | Cleaned, standardized, and normalized data | Tables | Batch, full load (truncate & insert) |
-| 🥇 **Gold** | Business-ready data in a star schema | Views | No load, views over Silver |
+| 🥉 Bronze | Raw source data loaded as-is from CRM and ERP CSV files | Tables | Batch load via BULK INSERT |
+| 🥈 Silver | Cleaned, standardized, normalized, and deduplicated data | Tables | SQL-based transformation pipeline |
+| 🥇 Gold | Business-ready analytical views for reporting | Views | Query layer over Silver |
 
-**Data flow:** `CSV files (CRM, ERP)` → 🥉 **Bronze** → 🥈 **Silver** → 🥇 **Gold** → `Reports / Analytics`
+**Data flow:** `CRM / ERP CSV files` → 🥉 `bronze` → 🥈 `silver` → 🥇 `gold` → `Reports / Analytics`
 
-> 🖼️ Add your architecture diagram here: `docs/data_architecture.png`
+![Data Architecture](docs/data_architecture.png)
 
 ---
 
 ## 📁 Repository Structure
 
-```
+```text
 sql-data-warehouse-project/
-│
-├── datasets/     # Raw source data (CRM and ERP CSV files)
-├── docs/         # Architecture diagrams, data models, naming conventions, data catalog
-├── scripts/      # SQL scripts for each layer
-│   ├── bronze/         # DDL and load procedures for raw data
-│   ├── silver/         # Cleansing and transformation scripts
-│   ├── gold/           # Views for the dimension and fact tables
-|   ├── init_database   # Creates the database and schemas
-├── tests/        # Data quality checks and validation queries
-└── README.md
+├── datasets/
+│   ├── source_crm/
+│   │   ├── cust_info.csv
+│   │   ├── prd_info.csv
+│   │   └── sales_details.csv
+│   ├── source_erp/
+│   │   ├── CUST_AZ12.csv
+│   │   ├── LOC_A101.csv
+│   │   └── PX_CAT_G1V2.csv
+│   └── placeholder
+├── docs/
+│   ├── ETL.png
+│   ├── Project_Notes_Sketches.pdf
+│   ├── data_architecture.png
+│   ├── data_catalog.md
+│   ├── data_flow.png
+│   ├── data_integration.png
+│   ├── data_layers.pdf
+│   ├── data_model.png
+│   └── naming_conventions.md
+├── scripts/
+│   ├── initialize_database.sql
+│   ├── bronze/
+│   │   ├── ddl_bronze.SQL
+│   │   └── load_procedure_bronze.sql
+│   ├── silver/
+│   │   ├── ddl_silver.sql
+│   │   └── load_procedures_silver.sql
+│   └── gold/
+│       └── ddl_gold.sql
+├── tests/
+│   ├── silver_quality_checks.sql
+│   └── gold_quality_checks.sql
+├── README.md
+└── .gitignore
 ```
 
 ---
 
 ## 📥 Data Sources
 
-Two source systems, delivered as CSV files:
+The project ingests data from two source systems:
 
-- 🤝 **CRM**: customer info, product info, sales details
-- 🏭 **ERP**: customer demographics, customer locations, product categories
+- 🤝 **CRM**: customer details, product information, and sales transactions
+- 🏭 **ERP**: location, customer demographic, and product category metadata
 
----
+The raw data is stored under:
 
-## ⭐ Data Model (Gold Layer)
+- `datasets/source_crm/`
+- `datasets/source_erp/`
 
-The Gold layer exposes a star schema:
-
-- 👥 `dim_customers`: customer attributes merged from CRM and ERP
-- 📦 `dim_products`: product attributes with category information
-- 💰 `fact_sales`: sales transactions linked to the dimension tables
+These files are loaded into the Bronze layer using SQL Server `BULK INSERT` operations.
 
 ---
 
-## ⚙️ ETL Highlights
+## ⭐ Gold Layer Data Model
 
-**🥉 Bronze**
-- Loads raw CSV data with `BULK INSERT`
-- No transformations, to preserve source fidelity
+The Gold layer exposes a star schema optimized for reporting and analytics:
 
-**🥈 Silver**
-- 🧹 Removes duplicates and trims unwanted spaces
-- ❓ Handles nulls and invalid values
-- 🔤 Standardizes categorical values (e.g. gender, marital status)
-- 📅 Fixes invalid dates and recalculates inconsistent sales and price values
-- ➕ Derives new columns where needed
+- `gold.dim_customers` — customer dimension enriched from CRM and ERP data
+- `gold.dim_products` — product dimension with category and line metadata
+- `gold.fact_sales` — sales fact table with transaction-level measures
 
-**🥇 Gold**
-- 🔗 Joins CRM and ERP data
-- 🔑 Integrates entities and generates surrogate keys
-- 👁️ Exposes the final dimension and fact views
+The gold schema is created in `scripts/gold/ddl_gold.sql` and is built on top of the Silver layer.
+
+---
+
+## ⚙️ ETL Pipeline Highlights
+
+### 🥉 Bronze Layer
+- Loads raw CSV data into staging tables with `BULK INSERT`
+- Preserves source fidelity with minimal transformation
+- Tables created in `scripts/bronze/ddl_bronze.SQL`
+- Loader stored procedure defined in `scripts/bronze/load_procedure_bronze.sql`
+
+### 🥈 Silver Layer
+- Trims whitespace and standardizes values
+- Handles null and invalid cases
+- Normalizes gender, marital status, and country codes
+- Recalculates inconsistent sales and pricing values
+- Builds clean, deduplicated business records
+- Tables created in `scripts/silver/ddl_silver.sql`
+- Transformation logic in `scripts/silver/load_procedures_silver.sql`
+
+### 🥇 Gold Layer
+- Joins CRM and ERP-derived data into business dimensions
+- Generates surrogate keys using row-based logic
+- Defines final analytical views for reporting
+- Views created in `scripts/gold/ddl_gold.sql`
 
 ---
 
 ## 🚀 Getting Started
 
 ### ✅ Prerequisites
-- [SQL Server Express](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (or any SQL Server edition)
-- [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) or Azure Data Studio
+- [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (Express or any edition)
+- [SSMS](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) or Azure Data Studio
 - [Git](https://git-scm.com/)
 
-### 🔧 Setup
+### 🔧 Setup and Execution
 
-1. **📥 Clone the repository**
+1. Clone the repository
+
 ```bash
-   git clone https://github.com/AdhishDatir/sql-data-warehouse-project.git
-   cd sql-data-warehouse-project
+git clone https://github.com/AdhishDatir/sql-data-warehouse-project.git
+cd sql-data-warehouse-project
 ```
 
-2. **🗄️ Initialize the database and schemas**
-   Run the initialization script in `scripts/` to create the `DataWarehouse` database and the `bronze`, `silver`, and `gold` schemas.
+2. Create the database and schemas
 
-3. **📂 Update file paths**
-   In the Bronze load script, point the `BULK INSERT` paths to where the CSV files from `datasets/` live on your machine.
+Run `scripts/initialize_database.sql` in SSMS or Azure Data Studio.
 
-4. **▶️ Run the pipeline in order**
+This creates the `DataWarehouse` database and the `bronze`, `silver`, and `gold` schemas.
+
+3. Update source file paths if needed
+
+The Bronze loader reads from local CSV paths such as:
+
 ```sql
-   -- Load raw data
-   EXEC bronze.load_bronze;
-
-   -- Clean and transform
-   EXEC silver.load_silver;
+C:\SQL\sql-data-warehouse-project\datasets\source_crm\cust_info.csv
 ```
-   Then run the Gold scripts to create the views.
 
-5. **🔍 Validate**
-   Run the queries in `tests/` to check data quality and integrity.
+Update the paths in `scripts/bronze/load_procedure_bronze.sql` to match your local environment.
+
+4. Run the ETL pipeline in order
+
+Execute the SQL scripts in this sequence:
+
+```sql
+USE DataWarehouse;
+GO
+
+-- Create object definitions
+EXECUTE dbo.sp_executesql @stmt = N'-- Run scripts/bronze/ddl_bronze.SQL';
+EXECUTE dbo.sp_executesql @stmt = N'-- Run scripts/silver/ddl_silver.sql';
+EXECUTE dbo.sp_executesql @stmt = N'-- Run scripts/gold/ddl_gold.sql';
+
+-- Load data
+EXEC bronze.load_bronze;
+EXEC silver.load_silver;
+```
+
+The project currently defines the Bronze and Silver loaders as stored procedures, and the Gold layer as views created from the cleaned Silver data.
+
+5. Validate the results
+
+Run the quality checks in `tests/` to validate transformation output and integrity.
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing and Validation
 
-The `tests/` folder holds quality checks, for example:
-- 🔑 Duplicate or null primary keys
-- ✂️ Unwanted whitespace in string fields
-- 📅 Invalid date ranges and orders
-- 🧮 Consistency between sales, quantity, and price
-- 🔗 Referential integrity between the fact and dimension views
+The repository includes focused SQL validation scripts:
+
+- `tests/silver_quality_checks.sql` — validates the Silver layer transformations and data quality
+- `tests/gold_quality_checks.sql` — validates the Gold layer views and star-schema logic
+
+These checks cover areas such as:
+- duplicate and null records
+- invalid date values
+- inconsistent sales/price calculations
+- referential alignment in the Gold layer
 
 ---
 
 ## 📚 Documentation
 
-See the `docs/` folder for:
-- 🏗️ Architecture and data flow diagrams
-- ⭐ Data model / star schema diagram
-- 🏷️ Naming conventions
-- 📖 Gold layer data catalog
+The `docs/` folder contains project documentation and design assets:
+
+- 🏗️ Architecture diagrams and ETL visuals
+- ⭐ Data model and star schema references
+- 🏷️ Naming conventions and standards
+- 📖 Data catalog for Gold-layer objects
+
+Relevant documents include:
+- `docs/data_architecture.png`
+- `docs/data_model.png`
+- `docs/data_catalog.md`
+- `docs/naming_conventions.md`
 
 ---
 
 ## 🏷️ Naming Conventions
 
-- **Style:** `snake_case`, English only
-- **Bronze/Silver tables:** `<source>_<entity>` (e.g. `crm_cust_info`)
-- **Gold objects:** `<category>_<entity>` (e.g. `dim_customers`, `fact_sales`)
+The repository follows the naming conventions documented in `docs/naming_conventions.md`:
+
+- **Style:** `snake_case`
+- **Bronze/Silver objects:** `<source>_<entity>`
+- **Gold objects:** `<category>_<entity>` such as `dim_customers`, `fact_sales`
 - **Surrogate keys:** `<table>_key`
 - **Stored procedures:** `load_<layer>`
 
@@ -161,6 +236,7 @@ See the `docs/` folder for:
 ## 👤 Author
 
 **Adhish Datir**
+
 [GitHub](https://github.com/AdhishDatir)
 
 ---
